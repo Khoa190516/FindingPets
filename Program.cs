@@ -60,8 +60,8 @@ builder.Services.AddSwaggerGen(c =>
 
 });
 // Add DBContext
-builder.Services.AddDbContext<FindingPetsDbContext>();
-//builder.Services.AddDbContext<FindingPetsDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//builder.Services.AddDbContext<FindingPetsDbContext>();
+builder.Services.AddDbContext<FindingPetsDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("LiveConnection")));
 
 // Add Services
 builder.Services.AddScoped<IPostService, PostService>();
