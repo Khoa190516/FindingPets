@@ -61,7 +61,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 // Add DBContext
 //builder.Services.AddDbContext<FindingPetsDbContext>();
-builder.Services.AddDbContext<FindingPetsDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("LiveConnection")));
+builder.Services.AddDbContext<FindingPetsDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add Services
 builder.Services.AddScoped<IPostService, PostService>();
@@ -76,16 +76,16 @@ builder.Services.AddTransient<IAuthenUserRepo,  AuthenUserRepo>();
 // Add authen
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
 {
-    opt.Authority = builder.Configuration["Jwt:Firebase:ValidIssuer"];
+    //opt.Authority = builder.Configuration["Jwt:Firebase:ValidIssuer"];
     opt.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Firebase:ValidIssuer"],
-        ValidAudience = builder.Configuration["Jwt:Firebase:ValidAudience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Firebase:PrivateKey"]))
+        ValidIssuer = "api://findingpets",
+        ValidAudience = "api://findingpets",
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("findingpets16062000"))
     };
 });
 
