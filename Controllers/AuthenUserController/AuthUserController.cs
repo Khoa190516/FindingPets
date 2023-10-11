@@ -12,7 +12,7 @@ using Microsoft.Data.SqlClient;
 
 namespace FindingPets.Controllers.AuthenUserController
 {
-    [Route("api/[controller]")]
+    [Route("api/account")]
     [ApiController]
     [Authorize]
     public class AuthUserController : ControllerBase

@@ -17,7 +17,7 @@ using MessagePack.Formatters;
 
 namespace FindingPets.Controllers.PostController
 {
-    [Route("api/[controller]")]
+    [Route("api/post")]
     [ApiController]
     [Authorize]
     public class PostsController : ControllerBase
