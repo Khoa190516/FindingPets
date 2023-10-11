@@ -4,7 +4,7 @@
     {
         Task<T?> FindByID(Guid id);
         Task Insert(T entity);
-        Task<T> Delete(Guid id);
+        Task<bool> Delete(Guid id);
         Task Update();
     }
 }

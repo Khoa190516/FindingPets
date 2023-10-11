@@ -84,6 +84,23 @@ namespace FindingPets.Business.Services.PostServices
             }
         }
 
+        public async Task<bool> DeletePost(PostDeleteModel post)
+        {
+            var postImages = await _postImagesRepo.GetPostImagesByPostID(post.Id);
+
+            if(postImages != null)
+            {
+                var isImageDeleted = await _postImagesRepo.RemoveImages(postImages);
+
+                if (isImageDeleted)
+                {
+                    var isPostDeleted = await _postRepo.Delete(post.Id);
+                    return isPostDeleted;
+                }
+            }
+            return false;
+        }
+
         public async Task<List<PostView>> GetAllPosts()
         {
             List<PostView> posts = await _postRepo.GetPosts();

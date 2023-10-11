@@ -1,4 +1,5 @@
-﻿using FindingPets.Data.Entities;
+﻿using FindingPets.Data.Commons;
+using FindingPets.Data.Entities;
 using FindingPets.Data.PostgreEntities;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,9 +17,20 @@ namespace FindingPets.Data.Repositories.BaseRepositories
             _entities = context.Set<T>();
         }
 
-        public Task<T> Delete(Guid id)
+        public async Task<bool> Delete(Guid id)
         {
-            throw new NotImplementedException();
+            var entity = await _entities.FindAsync(id) ?? 
+                throw new RecordNotFoundException("Record Not Found, ID: " + id);
+            try
+            {
+                _entities.Remove(entity);
+                await Update();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Delete Record Failed. ID: " + id + "\n" + ex.Message);
+            }
         }
 
         public async Task<T?> FindByID(Guid id)

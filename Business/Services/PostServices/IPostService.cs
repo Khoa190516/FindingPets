@@ -8,5 +8,6 @@ namespace FindingPets.Business.Services.PostServices
         public Task<bool> CreatePost(PostCreateModel newPost, Guid ownerId);
         public Task<bool> UpdatePost(PostUpdateModel newPost);
         public Task<bool> ChangePostStatus(Guid postId, Guid userId);
+        public Task<bool> DeletePost(PostDeleteModel post);
     }
 }

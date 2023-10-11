@@ -23,4 +23,9 @@
     {
         public Guid Id { get; set; }
     }
+
+    public class PostDeleteModel
+    {
+        public Guid Id { get; set; }
+    }
 }

@@ -160,5 +160,24 @@ namespace FindingPets.Controllers.PostController
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpDelete("delete")]
+        [Authorize(Roles = "admin, customer")]
+        public async Task<IActionResult> DeletePost([FromBody] PostDeleteModel post)
+        {
+            try
+            {
+                var isDeleted = await _postService.DeletePost(post);
+                return Ok(isDeleted);
+            }
+            catch(RecordNotFoundException ex)
+            {
+                return StatusCode(404, ex.Message);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
