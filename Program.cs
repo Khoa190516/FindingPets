@@ -117,7 +117,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 
-app.UseCors("*");
+app.UseCors("AllowOrigin");
 
 app.UseAuthorization();
 
