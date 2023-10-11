@@ -57,6 +57,7 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.PostRepositories
                 ?? throw new Exception($"Post {post.Id} not found");
 
             postEntity.Contact = post.Contact;
+            postEntity.Title = post.Title;
             postEntity.Description = post.Description;
             await Update();
             return true;
