@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Data.SqlClient;
+using System.Net;
 
 namespace FindingPets.Controllers.AuthenUserController
 {
@@ -57,7 +58,7 @@ namespace FindingPets.Controllers.AuthenUserController
         {
             try
             {
-                UserTokenModel userLoggedIn = new();
+                UserTokenModel? userLoggedIn;
 
                 if (model == null) throw new ArgumentException("User Null");
 
@@ -81,7 +82,11 @@ namespace FindingPets.Controllers.AuthenUserController
             }
             catch (ArgumentException ex)
             {
-                return StatusCode(401, ex.Message);
+                return StatusCode(400, ex.Message);
+            }
+            catch (RecordNotFoundException ex)
+            {
+                return StatusCode(404, ex.Message);
             }
             catch (SqlException ex)
             {
@@ -101,6 +106,10 @@ namespace FindingPets.Controllers.AuthenUserController
                 var profile = await _authenUserService.GetProfile(ownerId);
                 return Ok(profile);
 
+            }
+            catch(RecordNotFoundException ex)
+            {
+                return StatusCode(400, ex.Message);
             }
             catch(Exception ex)
             {

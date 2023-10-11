@@ -52,7 +52,8 @@ namespace FindingPets.Business.Services.AuthenUserServices
             var account = await _authenUserRepo.FindByID(userId);
             if(account != null)
             {
-                var profile = await _authenUserRepo.GetAccountByEmail(account.Email);
+                var profile = await _authenUserRepo.GetAccountByEmail(account.Email) ?? 
+                    throw new RecordNotFoundException($"Email: {account.Email} Not Found");
 
                 ProfileModel profileView = new()
                 {
@@ -68,7 +69,7 @@ namespace FindingPets.Business.Services.AuthenUserServices
             }
             else
             {
-                throw new Exception("Get Profile Error, No Account Found");
+                throw new RecordNotFoundException($"User ID: {userId} Not Found");
             }
         }
 
@@ -78,13 +79,13 @@ namespace FindingPets.Business.Services.AuthenUserServices
             return result;
         }
 
-        public async Task<UserTokenModel> LoginWithEmail(UserLoginModel account)
+        public async Task<UserTokenModel?> LoginWithEmail(UserLoginModel account)
         {
             // Check email is in DB and Create Token for this login
             _logger.LogInformation(message: $"Login with email: {account.Email}");
-            var userJWT = await _authenUserRepo.GetAccountByEmail(account.Email);
+            var userJWT = await _authenUserRepo.GetAccountByEmail(account.Email) ?? 
+                throw new RecordNotFoundException($"Email: {account.Email} Not Found");
             userJWT.Token = JWTUserToken.GenerateJWTTokenUser(userJWT);
-
             return userJWT;
         }
 

@@ -1,10 +1,11 @@
 ﻿using FindingPets.Business.JWT;
-using FindingPets.Data.Entities;
+using FindingPets.Data.Commons;
 using FindingPets.Data.Models.PostResponseModel;
 using FindingPets.Data.Models.UserModel;
 using FindingPets.Data.PostgreEntities;
 using FindingPets.Data.Repositories.BaseRepositories;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserRepositories
 {
@@ -14,7 +15,7 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserReposi
         {
         }
 
-        public async Task<UserTokenModel> GetAccountByEmail(string email)
+        public async Task<UserTokenModel?> GetAccountByEmail(string email)
         {
             var query = from u in context.Authenusers
                         join r in context.Userroles
@@ -31,14 +32,16 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserReposi
                 RoleId = selector.u.Userrole,
                 ImageURL = selector.u.Imageurl??string.Empty,
                 Role = selector.r.Rolename
-            }).FirstOrDefaultAsync() ?? throw new Exception("Email Not Found");
+            }).FirstOrDefaultAsync();
 
             return user;
         }
 
         public async Task<UserWithPostsModel?> GetUserWithPosts(string email)
         {
-            var result = await context.Authenusers
+            try
+            {
+                var result = await context.Authenusers
                 .Where(x => x.Email.ToLower().Equals(email.ToLower()))
                 .Include(a => a.Posts).Select(x => new UserWithPostsModel()
                 {
@@ -66,7 +69,12 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserReposi
                     }).ToList()
                 }).FirstOrDefaultAsync();
 
-            return result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task<bool> IsEmailExist(string email)

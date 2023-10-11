@@ -7,7 +7,7 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserReposi
 {
     public interface IAuthenUserRepo : IBaseRepo<Authenuser>
     {
-        public Task<UserTokenModel> GetAccountByEmail(string email);
+        public Task<UserTokenModel?> GetAccountByEmail(string email);
 
         public Task<bool> IsEmailExist(string email);
 
