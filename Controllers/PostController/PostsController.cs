@@ -44,6 +44,7 @@ namespace FindingPets.Controllers.PostController
             try
             {
                 var posts = await _postService.GetAllPosts();
+                posts = posts.OrderByDescending(p => p.Created).ToList();
                 return Ok(posts);
             }
             catch(Exception ex)
