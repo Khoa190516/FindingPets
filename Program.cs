@@ -1,8 +1,10 @@
+using FindingPets;
 using FindingPets.Business.Services.AuthenUserServices;
 using FindingPets.Business.Services.EmailServices;
 using FindingPets.Business.Services.ImageServices;
 using FindingPets.Business.Services.PostServices;
 using FindingPets.Data.Entities;
+using FindingPets.Data.PostgreEntities;
 using FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserRepositories;
 using FindingPets.Data.Repositories.ImplementedRepositories.PostImagesRepositories;
 using FindingPets.Data.Repositories.ImplementedRepositories.PostRepositories;
@@ -61,7 +63,8 @@ builder.Services.AddSwaggerGen(c =>
 });
 // Add DBContext
 //builder.Services.AddDbContext<FindingPetsDbContext>();
-builder.Services.AddDbContext<FindingPetsDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("LiveConnection")));
+//builder.Services.AddDbContext<FindingPetsDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
+builder.Services.AddDbContext<D8hclhg7mplh6sContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
 
 // Add Services
 builder.Services.AddScoped<IPostService, PostService>();

@@ -1,14 +1,13 @@
-﻿using FindingPets.Data.Entities;
-using FindingPets.Data.Models.PostResponseModel;
+﻿using FindingPets.Data.Models.PostResponseModel;
+using FindingPets.Data.PostgreEntities;
 using FindingPets.Data.Repositories.BaseRepositories;
 using Microsoft.EntityFrameworkCore;
-using NuGet.Protocol.Core.Types;
 
 namespace FindingPets.Data.Repositories.ImplementedRepositories.PostRepositories
 {
     public class PostRepo : BaseRepo<Post>, IPostRepo
     {
-        public PostRepo(FindingPetsDbContext context) : base(context)
+        public PostRepo(D8hclhg7mplh6sContext context) : base(context)
         {
         }
 
@@ -20,12 +19,13 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.PostRepositories
             List<PostView> postsView = await query.Select(x => new PostView()
             {
                 Id = x.p.Id,
+                Title = x.p.Title,
                 Created = x.p.Created,
                 Contact = x.p.Contact,
                 Description = x.p.Description,
-                IsBanned = x.p.IsBanned,
-                IsClosed = x.p.IsClosed,
-                OwnerId = x.p.OwnerId,
+                IsBanned = x.p.Isbanned,
+                IsClosed = x.p.Isclosed,
+                OwnerId = x.p.Ownerid,
             }).ToListAsync();
 
             return postsView;
@@ -34,7 +34,7 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.PostRepositories
         public async Task<List<PostView>> GetPostsByOwner(Guid ownerId)
         {
             var query = from p in context.Posts
-                        where p.OwnerId == ownerId
+                        where p.Ownerid == ownerId
                         select new { p };
 
             List<PostView> postsView = await query.Select(x => new PostView()
@@ -43,9 +43,9 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.PostRepositories
                 Created = x.p.Created,
                 Contact = x.p.Contact,
                 Description = x.p.Description,
-                IsBanned = x.p.IsBanned,
-                IsClosed = x.p.IsClosed,
-                OwnerId = x.p.OwnerId,
+                IsBanned = x.p.Isbanned,
+                IsClosed = x.p.Isclosed,
+                OwnerId = x.p.Ownerid,
             }).ToListAsync();
 
             return postsView;
@@ -71,25 +71,25 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.PostRepositories
             {
                 case true: //Change isBanned Status
                     {
-                        if (postEntity.IsBanned == null || postEntity.IsBanned == false)
+                        if (postEntity.Isbanned == null || postEntity.Isbanned == false)
                         {
-                            postEntity.IsBanned = true;
+                            postEntity.Isbanned = true;
                         }
                         else
                         {
-                            postEntity.IsBanned = false;
+                            postEntity.Isbanned = false;
                         }
                         break;
                     }
                 case false:  // Change is Closed Status
                     {
-                        if (postEntity.IsClosed == null || postEntity.IsClosed == false)
+                        if (postEntity.Isclosed == null || postEntity.Isclosed == false)
                         {
-                            postEntity.IsClosed = true;
+                            postEntity.Isclosed = true;
                         }
                         else
                         {
-                            postEntity.IsClosed = false;
+                            postEntity.Isclosed = false;
                         }
                         break;
                     }

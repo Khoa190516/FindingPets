@@ -1,4 +1,4 @@
-﻿using FindingPets.Data.Entities;
+﻿using FindingPets.Data.PostgreEntities;
 using FindingPets.Data.Models.PostResponseModel;
 using FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserRepositories;
 using FindingPets.Data.Repositories.ImplementedRepositories.PostImagesRepositories;
@@ -27,7 +27,7 @@ namespace FindingPets.Business.Services.PostServices
             var account = await _authenUserRepo.FindByID(userId);
             if (account == null) throw new Exception($"User ID: {userId} not found");
 
-            switch (account.UserRole)
+            switch (account.Userrole)
             {
                 case 0:
                     {
@@ -49,12 +49,13 @@ namespace FindingPets.Business.Services.PostServices
                 Post postEntity = new()
                 {
                     Id = Guid.NewGuid(),
+                    Title = newPost.Title,
                     Contact = newPost.Contact,
                     Description = newPost.Description,
                     Created = DateTime.Now,
-                    IsBanned = false,
-                    IsClosed = false,
-                    OwnerId = ownerId,
+                    Isbanned = false,
+                    Isclosed = false,
+                    Ownerid = ownerId,
                 };
 
                 // Insert post to DB
@@ -64,11 +65,11 @@ namespace FindingPets.Business.Services.PostServices
                 // Insert Images
                 foreach (var newImage in newPost.PostImages)
                 {
-                    PostImage imageEntity = new()
+                    Postimage imageEntity = new()
                     {
                         Id = Guid.NewGuid(),
-                        ImageBase64 = newImage.ImageBase64,
-                        PostId = postEntity.Id
+                        Imagebase64 = newImage.ImageBase64,
+                        Postid = postEntity.Id
                     };
                     // Insert images to DB
                     _logger.LogInformation(message: $"Begin insert Image to DB with ID: {imageEntity.Id} at {DateTime.Now}");
@@ -91,6 +92,8 @@ namespace FindingPets.Business.Services.PostServices
             {
                 List<PostImageView> images = await _postImagesRepo.GetPostImagesByPostID(postView.Id);
                 postView.PostImages.AddRange(images);
+                DateTime createdDate = postView.Created ?? DateTime.Now; 
+                postView.CreatedString = createdDate.ToString("MM/dd/yyyy hh:mm tt");
             }
 
             return posts;
@@ -117,11 +120,11 @@ namespace FindingPets.Business.Services.PostServices
                 //Add new images
                 foreach (var image in newPost.postImages)
                 {
-                    PostImage newImage = new()
+                    Postimage newImage = new()
                     {
                         Id = Guid.NewGuid(),
-                        ImageBase64 = image.ImageBase64,
-                        PostId = newPost.Id
+                        Imagebase64 = image.ImageBase64,
+                        Postid = newPost.Id
                     };
                     _logger.LogInformation(message: $"Insert new postImage ID: {newImage.Id} to DB");
                     await _postImagesRepo.Insert(newImage);

@@ -1,9 +1,8 @@
 ﻿using FindingPets.Business.JWT;
 using FindingPets.Data.Commons;
-using FindingPets.Data.Entities;
 using FindingPets.Data.Models.UserModel;
+using FindingPets.Data.PostgreEntities;
 using FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserRepositories;
-using System.Collections;
 
 namespace FindingPets.Business.Services.AuthenUserServices
 {
@@ -29,14 +28,14 @@ namespace FindingPets.Business.Services.AuthenUserServices
                     throw new Exception($"Email {email} has been used");
                 }
 
-                AuthenUser newAccount = new()
+                Authenuser newAccount = new()
                 {
                     Id = Guid.NewGuid(),
                     Email = email,
-                    FullName = string.Empty,
-                    IsActive = true,
+                    Fullname = string.Empty,
+                    Isactive = true,
                     Phone = string.Empty,
-                    UserRole = Commons.CUSTOMER,
+                    Userrole = Commons.CUSTOMER,
                 };
                 _logger.LogInformation(message: $"Begin create new authenUser with ID: {newAccount.Id} account at {DateTime.Now}");
                 await _authenUserRepo.Insert(newAccount);
@@ -73,7 +72,7 @@ namespace FindingPets.Business.Services.AuthenUserServices
             }
         }
 
-        public async Task<IEnumerable> GetUserWithPost(string email)
+        public async Task<UserWithPostsModel?> GetUserWithPost(string email)
         {
             var result = await _authenUserRepo.GetUserWithPosts(email);
             return result;

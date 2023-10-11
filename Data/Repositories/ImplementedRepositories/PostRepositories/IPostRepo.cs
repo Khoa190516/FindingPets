@@ -1,5 +1,5 @@
-﻿using FindingPets.Data.Entities;
-using FindingPets.Data.Models.PostResponseModel;
+﻿using FindingPets.Data.Models.PostResponseModel;
+using FindingPets.Data.PostgreEntities;
 using FindingPets.Data.Repositories.BaseRepositories;
 
 namespace FindingPets.Data.Repositories.ImplementedRepositories.PostRepositories

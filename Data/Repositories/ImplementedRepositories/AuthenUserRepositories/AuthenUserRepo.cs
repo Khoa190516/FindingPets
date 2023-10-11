@@ -2,69 +2,69 @@
 using FindingPets.Data.Entities;
 using FindingPets.Data.Models.PostResponseModel;
 using FindingPets.Data.Models.UserModel;
+using FindingPets.Data.PostgreEntities;
 using FindingPets.Data.Repositories.BaseRepositories;
 using Microsoft.EntityFrameworkCore;
-using System.Collections;
 
 namespace FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserRepositories
 {
-    public class AuthenUserRepo : BaseRepo<AuthenUser>, IAuthenUserRepo
+    public class AuthenUserRepo : BaseRepo<Authenuser>, IAuthenUserRepo
     {
-        public AuthenUserRepo(FindingPetsDbContext context) : base(context)
+        public AuthenUserRepo(D8hclhg7mplh6sContext context) : base(context)
         {
         }
 
         public async Task<UserTokenModel> GetAccountByEmail(string email)
         {
-            var query = from u in context.AuthenUsers
-                        join r in context.UserRoles
-                        on u.UserRole equals r.Id
+            var query = from u in context.Authenusers
+                        join r in context.Userroles
+                        on u.Userrole equals r.Id
                         where u.Email.ToLower().Trim().Equals(email.ToLower().Trim())
                         select new { u, r };
 
             var user = await query.Select(selector => new UserTokenModel()
             {
                 Id = selector.u.Id,
-                Name = selector.u.FullName ?? string.Empty,
+                Name = selector.u.Fullname ?? string.Empty,
                 Email = email,
-                IsActive = selector.u.IsActive ?? true,
-                RoleId = selector.u.UserRole,
-                ImageURL = selector.u.ImageUrl??string.Empty,
-                Role = selector.r.RoleName
+                IsActive = selector.u.Isactive ?? true,
+                RoleId = selector.u.Userrole,
+                ImageURL = selector.u.Imageurl??string.Empty,
+                Role = selector.r.Rolename
             }).FirstOrDefaultAsync() ?? throw new Exception("Email Not Found");
 
             return user;
         }
 
-        public async Task<IEnumerable> GetUserWithPosts(string email)
+        public async Task<UserWithPostsModel?> GetUserWithPosts(string email)
         {
-            var result = await context.AuthenUsers
+            var result = await context.Authenusers
                 .Where(x => x.Email.ToLower().Equals(email.ToLower()))
                 .Include(a => a.Posts).Select(x => new UserWithPostsModel()
                 {
                     Email = x.Email,
                     Id = x.Id,
-                    ImageURL = x.ImageUrl ?? string.Empty,
-                    Name = x.FullName,
-                    Role = x.UserRole == 0 ? "admin" : "customer",
-                    RoleId = x.UserRole,
+                    ImageURL = x.Imageurl ?? string.Empty,
+                    Name = x.Fullname,
+                    Role = x.Userrole == 0 ? "admin" : "customer",
+                    RoleId = x.Userrole,
                     Posts = x.Posts.Select(p => new PostView()
                     {
                         Contact = p.Contact,
                         Created = p.Created,
                         Description = p.Description,
                         Id = p.Id,
-                        IsBanned = p.IsBanned,
-                        IsClosed = p.IsClosed,
-                        OwnerId = p.OwnerId,
-                        PostImages = p.PostImages.Select(i => new PostImageView()
+                        IsBanned = p.Isbanned,
+                        IsClosed = p.Isclosed,
+                        OwnerId = p.Ownerid,
+                        PostImages = p.Postimages.Select(i => new PostImageView()
                         {
                             Id = i.Id,
-                            ImageBase64 = i.ImageBase64,
-                            PostId = i.PostId,
+                            ImageBase64 = i.Imagebase64,
+                            PostId = i.Postid,
                         }).ToList()
                     }).ToList()
-                }).ToListAsync();
+                }).FirstOrDefaultAsync();
 
             return result;
         }
@@ -73,7 +73,7 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserReposi
         {
             try
             {
-                var query = from u in context.AuthenUsers
+                var query = from u in context.Authenusers
                             where u.Email.ToLower().Trim().Equals(email.ToLower().Trim())
                             select new { u };
                 var account = await query.FirstOrDefaultAsync();
@@ -86,13 +86,13 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserReposi
 
         public async Task<bool> UpdateProfile(UserProfileUpdateModel model, Guid userId)
         {
-            var account = await context.AuthenUsers.FindAsync(userId);
+            var account = await context.Authenusers.FindAsync(userId);
             if (account == null) throw new Exception($"User ID: {userId} not found in DB");
 
             //account.Email = model.Email;
-            account.FullName = model.FullName;
+            account.Fullname = model.FullName;
             account.Phone = model.Phone;
-            account.ImageUrl = model.ImageUrl;
+            account.Imageurl = model.ImageUrl;
 
             await Update();
 

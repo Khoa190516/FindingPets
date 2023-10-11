@@ -1,28 +1,28 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using FindingPets.Data.Entities;
 using FindingPets.Data.Models.PostResponseModel;
 using FindingPets.Data.Repositories.BaseRepositories;
+using FindingPets.Data.PostgreEntities;
 
 namespace FindingPets.Data.Repositories.ImplementedRepositories.PostImagesRepositories
 {
-    public class PostImageRepo : BaseRepo<PostImage>, IPostImagesRepo
+    public class PostImageRepo : BaseRepo<Postimage>, IPostImagesRepo
     {
-        public PostImageRepo(FindingPetsDbContext context) : base(context) 
+        public PostImageRepo(D8hclhg7mplh6sContext context) : base(context) 
         {
         }
 
         public async Task<List<PostImageView>> GetPostImagesByPostID(Guid postId)
         {
             var query = from p in context.Posts
-                        join i in context.PostImages
-                        on p.Id equals i.PostId
+                        join i in context.Postimages
+                        on p.Id equals i.Postid
                         where p.Id == postId
                         select new {p, i};
 
             List<PostImageView> images = await query.Select(x => new PostImageView()
             {
                 Id = x.i.Id,
-                ImageBase64 = x.i.ImageBase64,
+                ImageBase64 = x.i.Imagebase64,
                 PostId = x.p.Id
             }).ToListAsync();
 
@@ -34,10 +34,10 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.PostImagesReposi
             //Remove old images
             foreach(var image in postImages)
             {
-                var imgEntity = await context.PostImages.FindAsync(image.Id);
+                var imgEntity = await context.Postimages.FindAsync(image.Id);
                 if (imgEntity != null)
                 {
-                    context.PostImages.Remove(imgEntity);
+                    context.Postimages.Remove(imgEntity);
                 }
                 else
                 {

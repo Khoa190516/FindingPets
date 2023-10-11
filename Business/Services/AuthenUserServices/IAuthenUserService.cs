@@ -10,6 +10,6 @@ namespace FindingPets.Business.Services.AuthenUserServices
         public Task<bool> CreatAccount(string email);
         public Task<bool> UpdateProfille(UserProfileUpdateModel model, Guid userId);
         public Task<ProfileModel> GetProfile(Guid userId);
-        public Task<IEnumerable> GetUserWithPost(string email);
+        public Task<UserWithPostsModel?> GetUserWithPost(string email);
     }
 }

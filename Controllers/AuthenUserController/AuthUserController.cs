@@ -155,5 +155,29 @@ namespace FindingPets.Controllers.AuthenUserController
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpGet("get-posts-by-user")]
+        [Authorize(Roles = "admin,customer")]
+        public async Task<IActionResult> GetPostsByUser()
+        {
+            try
+            {
+                string token = (Request.Headers)["Authorization"].ToString().Split(" ")[1];
+                Guid ownerId = decodeToken.DecodeID(token, Commons.JWTClaimID);
+
+                _logger.LogInformation(message: $"Start Getting Posts By User Token: {ownerId}");
+                var profile = await _authenUserService.GetProfile(ownerId);
+                if(profile != null)
+                {
+                    var result = await _authenUserService.GetUserWithPost(profile.Email);
+                    return Ok(result);
+                }
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
     }
 }

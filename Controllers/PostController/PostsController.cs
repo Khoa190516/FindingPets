@@ -86,9 +86,22 @@ namespace FindingPets.Controllers.PostController
             return Ok(posts);
         }
 
+        // GET: api/Posts
+        [HttpGet("get-by-id")]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<Post>>> GetPostById(Guid postId)
+        {
+            var posts = await _postService.GetAllPosts();
+            if (posts == null)
+            {
+                return NotFound();
+            }
+            return Ok(posts.Where(p => p.Id.Equals(postId)).FirstOrDefault());
+        }
+
         [HttpPost("insert")]
         [Authorize(Roles ="admin, customer")]
-        public async Task<ActionResult<bool>> InsertPost(PostCreateModel newPost)
+        public async Task<ActionResult<bool>> InsertPost([FromBody] PostCreateModel newPost)
         {
             try
             {
