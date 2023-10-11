@@ -20,8 +20,8 @@ namespace FindingPets.Business.JWT
             if (user.Role != null) //Admin || manager || show staff || ticket inspector || user || artist
             {
                 tokenUser = new JwtSecurityToken(
-                issuer: "https://securetoken.google.com/findingpets",
-                audience: "findingpets",
+                issuer: "api://findingpets",
+                audience: "api://findingpets",
                 claims: new[] {
                  //Id
                  new Claim(Commons.JWTClaimID, user.Id.ToString()),
