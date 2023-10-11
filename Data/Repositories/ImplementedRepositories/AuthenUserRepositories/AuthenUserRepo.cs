@@ -60,6 +60,7 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserReposi
                         IsBanned = p.Isbanned,
                         IsClosed = p.Isclosed,
                         OwnerId = p.Ownerid,
+                        Title = p.Title,
                         PostImages = p.Postimages.Select(i => new PostImageView()
                         {
                             Id = i.Id,
