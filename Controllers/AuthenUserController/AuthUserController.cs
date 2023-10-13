@@ -179,7 +179,11 @@ namespace FindingPets.Controllers.AuthenUserController
                 if(profile != null)
                 {
                     var result = await _authenUserService.GetUserWithPost(profile.Email);
-                    return Ok(result);
+                    if(result != null)
+                    {
+                        result.Posts = result.Posts.OrderByDescending(p => p.Created).ToList();
+                        return Ok(result);
+                    }
                 }
                 return StatusCode(StatusCodes.Status404NotFound);
             }
