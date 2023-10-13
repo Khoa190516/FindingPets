@@ -63,6 +63,7 @@ namespace FindingPets.Business.Services.AuthenUserServices
                     ImageURL = profile.ImageURL,
                     Role = profile.Role,
                     RoleId = profile.RoleId,
+                    Phone = profile.Phone
                 };
 
                 return profileView;

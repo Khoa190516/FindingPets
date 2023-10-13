@@ -10,5 +10,6 @@
         public int RoleId { get; set; }
         public string Token { get; set; } = string.Empty;
         public string ImageURL { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
     }
 }

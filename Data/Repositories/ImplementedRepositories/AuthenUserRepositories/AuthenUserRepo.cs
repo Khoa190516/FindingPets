@@ -31,7 +31,8 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserReposi
                 IsActive = selector.u.Isactive ?? true,
                 RoleId = selector.u.Userrole,
                 ImageURL = selector.u.Imageurl??string.Empty,
-                Role = selector.r.Rolename
+                Role = selector.r.Rolename,
+                Phone = selector.u.Phone,
             }).FirstOrDefaultAsync();
 
             return user;
