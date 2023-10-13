@@ -38,15 +38,16 @@ namespace FindingPets.Data.Repositories.BaseRepositories
             return await _entities.FindAsync(id);
         }
 
-        public async Task Insert(T entity)
+        public async Task<int> Insert(T entity)
         {
+            
             await _entities.AddAsync(entity);
-            await Update();
+            return await Update();
         }
 
-        public async Task Update()
+        public async Task<int> Update()
         {
-            await context.SaveChangesAsync();
+            return await context.SaveChangesAsync();
         }
     }
 }

@@ -3,8 +3,8 @@
     public interface IBaseRepo<T> where T : class
     {
         Task<T?> FindByID(Guid id);
-        Task Insert(T entity);
+        Task<int> Insert(T entity);
         Task<bool> Delete(Guid id);
-        Task Update();
+        Task<int> Update();
     }
 }

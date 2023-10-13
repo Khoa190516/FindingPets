@@ -19,32 +19,24 @@ namespace FindingPets.Business.Services.AuthenUserServices
 
         public async Task<bool> CreatAccount(string email)
         {
-            try
-            {
-                var isEmailExist = await _authenUserRepo.IsEmailExist(email);
+            var isEmailExist = await _authenUserRepo.IsEmailExist(email);
 
-                if(isEmailExist)
-                {
-                    throw new Exception($"Email {email} has been used");
-                }
-
-                Authenuser newAccount = new()
-                {
-                    Id = Guid.NewGuid(),
-                    Email = email,
-                    Fullname = string.Empty,
-                    Isactive = true,
-                    Phone = string.Empty,
-                    Userrole = Commons.CUSTOMER,
-                };
-                _logger.LogInformation(message: $"Begin create new authenUser with ID: {newAccount.Id} account at {DateTime.Now}");
-                await _authenUserRepo.Insert(newAccount);
-                return true;
-            }catch(Exception ex)
+            if (isEmailExist)
             {
-                _logger.LogError(message: $"Error when trying to insert new account with email: {email} at {DateTime.Now}. Error: {ex.Message}");
-                return false;
+                throw new ResourceAlreadyExistsException($"Email {email} has been used");
             }
+
+            Authenuser newAccount = new()
+            {
+                Id = Guid.NewGuid(),
+                Email = email,
+                Fullname = string.Empty,
+                Isactive = true,
+                Phone = string.Empty,
+                Userrole = Commons.CUSTOMER,
+            };
+            _logger.LogInformation(message: $"Begin create new authenUser with ID: {newAccount.Id} account at {DateTime.Now}");
+            return await _authenUserRepo.Insert(newAccount) > 0;
         }
 
         public async Task<ProfileModel> GetProfile(Guid userId)

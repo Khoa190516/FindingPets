@@ -144,8 +144,13 @@ namespace FindingPets.Controllers.AuthenUserController
             try
             {
                 var isCreated = await _authenUserService.CreatAccount(signUpModel.Email);
-                return isCreated == true ? Ok(isCreated) : BadRequest(isCreated);
-            }catch(Exception ex)
+                return isCreated ? Ok(isCreated) : BadRequest(isCreated);
+            }
+            catch(ResourceAlreadyExistsException ex)
+            {
+                return StatusCode(StatusCodes.Status409Conflict, ex.Message);
+            }
+            catch(Exception ex)
             {
                 return BadRequest(ex.Message);
             }
