@@ -117,7 +117,7 @@ namespace FindingPets.Controllers.AuthenUserController
             }
         }
 
-        [HttpPost("update-profile")]
+        [HttpPut("update-profile")]
         [Authorize(Roles ="admin,customer")]
         public async Task<IActionResult> UpdateProfile([FromBody] UserProfileUpdateModel model)
         {
