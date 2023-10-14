@@ -67,7 +67,12 @@ namespace FindingPets.Controllers.AuthenUserController
 
                 if (userLoggedIn != null)
                 {
-                    var OTP = await _emailService.SendOTP(model.Email);
+                    var OTP = string.Empty;
+
+                    if(model.IsSendOTP != null && model.IsSendOTP == true)
+                    {
+                        await _emailService.SendOTP(model.Email);
+                    }
 
                     UserLoginReponseModel result = new()
                     {

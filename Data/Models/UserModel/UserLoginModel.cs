@@ -3,6 +3,8 @@
     public class UserLoginModel
     {
         public string Email { get; set; } = string.Empty;
+
+        public bool? IsSendOTP { get; set; }
     }
 
     public class UserLoginReponseModel
