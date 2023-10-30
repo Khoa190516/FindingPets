@@ -1,4 +1,5 @@
-﻿using FindingPets.Data.Models.PostResponseModel;
+﻿using FindingPets.Data.Commons;
+using FindingPets.Data.Models.PostResponseModel;
 using FindingPets.Data.PostgreEntities;
 using FindingPets.Data.Repositories.BaseRepositories;
 using Microsoft.EntityFrameworkCore;
@@ -51,16 +52,14 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.PostRepositories
             return postsView;
         }
 
-        public async Task<bool> UpdatePost(PostUpdateModel post)
+        public async Task UpdatePost(PostUpdateModel post)
         {
             var postEntity = await context.Posts.FindAsync(post.Id)
-                ?? throw new Exception($"Post {post.Id} not found");
+                ?? throw new RecordNotFoundException($"Post {post.Id} not found");
 
             postEntity.Contact = post.Contact;
             postEntity.Title = post.Title;
             postEntity.Description = post.Description;
-            await Update();
-            return true;
         }
 
         public async Task<bool> UpdatePostStatus(Guid postId, bool isBanRequest)
@@ -95,7 +94,6 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.PostRepositories
                         break;
                     }
             }
-            await Update();
             return true;
 
         }

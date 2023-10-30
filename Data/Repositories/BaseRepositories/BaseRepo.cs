@@ -9,7 +9,7 @@ namespace FindingPets.Data.Repositories.BaseRepositories
     {
         //protected readonly FindingPetsDbContext context;
         protected readonly D8hclhg7mplh6sContext context;
-        private DbSet<T> _entities;
+        private readonly DbSet<T> _entities;
 
         public BaseRepo(D8hclhg7mplh6sContext context)
         {
@@ -48,6 +48,21 @@ namespace FindingPets.Data.Repositories.BaseRepositories
         public async Task<int> Update()
         {
             return await context.SaveChangesAsync();
+        }
+
+        public void Add(T entity)
+        {
+            _entities.Add(entity);
+        }
+
+        public void Edit(T entity)
+        {
+            _entities.Update(entity);
+        }
+
+        public void Remove(T entity)
+        {
+            _entities.Remove(entity);
         }
     }
 }

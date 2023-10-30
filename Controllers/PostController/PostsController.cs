@@ -15,6 +15,7 @@ using FindingPets.Business.JWT;
 using FindingPets.Data.Commons;
 using MessagePack.Formatters;
 using Microsoft.Data.SqlClient;
+using FindingPets.Business.Services.AuthenUserServices;
 
 namespace FindingPets.Controllers.PostController
 {
@@ -23,13 +24,15 @@ namespace FindingPets.Controllers.PostController
     [Authorize]
     public class PostsController : ControllerBase
     {
+        private readonly IAuthenUserService _authenUserService;
         private readonly IPostService _postService;
         private readonly IImageService _imageService;
         private readonly ILogger<PostsController> _logger;
         private readonly DecodeToken _decodeToken;
 
-        public PostsController(IPostService postService, IImageService imageService, ILogger<PostsController> logger)
+        public PostsController(IAuthenUserService authenUserService, IPostService postService, IImageService imageService, ILogger<PostsController> logger)
         {
+            _authenUserService = authenUserService;
             _postService = postService;
             _imageService = imageService;
             _logger = logger;
@@ -85,6 +88,49 @@ namespace FindingPets.Controllers.PostController
             }
         }
 
+        [HttpGet("get-user-with-posts")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetUserWithPosts(string email)
+        {
+            try
+            {
+                var result = await _authenUserService.GetUserWithPost(email);
+                return Ok(result);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpGet("get-posts-by-user")]
+        [Authorize(Roles = "admin,customer")]
+        public async Task<IActionResult> GetPostsByUser()
+        {
+            try
+            {
+                string token = (Request.Headers)["Authorization"].ToString().Split(" ")[1];
+                Guid ownerId = _decodeToken.DecodeID(token, Commons.JWTClaimID);
+
+                _logger.LogInformation(message: $"Start Getting Posts By User Token: {ownerId}");
+                var profile = await _authenUserService.GetProfile(ownerId);
+                if (profile != null)
+                {
+                    var result = await _authenUserService.GetUserWithPost(profile.Email);
+                    if (result != null)
+                    {
+                        result.Posts = result.Posts.OrderByDescending(p => p.Created).ToList();
+                        return Ok(result);
+                    }
+                }
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
         [HttpPost("insert")]
         [Authorize(Roles ="admin, customer")]
         public async Task<IActionResult> InsertPost([FromBody] PostCreateModel newPost)
@@ -94,8 +140,8 @@ namespace FindingPets.Controllers.PostController
                 string token = (Request.Headers)["Authorization"].ToString().Split(" ")[1];
                 Guid onwerId = _decodeToken.DecodeID(token, Commons.JWTClaimID);
                 _logger.LogInformation(message: $"Begin Call InsertPost Service at {DateTime.Now}");
-                await _postService.CreatePost(newPost, onwerId);
-                return Ok(true);
+                var isCreated = await _postService.CreatePost(newPost, onwerId);
+                return Ok(isCreated);
             }catch(Exception ex)
             {
                 _logger.LogError(message: $"Insert Post Error with Exception: {ex.Message} at {DateTime.Now}");

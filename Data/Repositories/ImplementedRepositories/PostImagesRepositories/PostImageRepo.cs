@@ -2,6 +2,7 @@
 using FindingPets.Data.Models.PostResponseModel;
 using FindingPets.Data.Repositories.BaseRepositories;
 using FindingPets.Data.PostgreEntities;
+using FindingPets.Data.Commons;
 
 namespace FindingPets.Data.Repositories.ImplementedRepositories.PostImagesRepositories
 {
@@ -29,7 +30,7 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.PostImagesReposi
             return images;
         }
 
-        public async Task<bool> RemoveImages(List<PostImageView> postImages)
+        public async Task RemoveImages(List<PostImageView> postImages)
         {
             //Remove old images
             foreach(var image in postImages)
@@ -37,15 +38,13 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.PostImagesReposi
                 var imgEntity = await context.Postimages.FindAsync(image.Id);
                 if (imgEntity != null)
                 {
-                    context.Postimages.Remove(imgEntity);
+                    Remove(imgEntity);
                 }
                 else
                 {
-                    throw new Exception($"Image {image.Id} not found");
+                    throw new RecordNotFoundException($"{image.Id} not found");
                 }
             }
-            await Update();
-            return true;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserReposi
 
         public Task<bool> IsEmailExist(string email);
 
-        public Task<bool> UpdateProfile(UserProfileUpdateModel model, Guid userId);
+        public Task UpdateProfile(UserProfileUpdateModel model, Guid userId);
 
         public Task<UserWithPostsModel?> GetUserWithPosts(string email);
     }

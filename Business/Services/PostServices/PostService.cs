@@ -4,6 +4,8 @@ using FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserRepositori
 using FindingPets.Data.Repositories.ImplementedRepositories.PostImagesRepositories;
 using FindingPets.Data.Repositories.ImplementedRepositories.PostRepositories;
 using Microsoft.IdentityModel.Tokens;
+using FindingPets.Data.UnitOfWork;
+using FindingPets.Data.Commons;
 
 namespace FindingPets.Business.Services.PostServices
 {
@@ -12,10 +14,12 @@ namespace FindingPets.Business.Services.PostServices
         private readonly IPostRepo _postRepo;
         private readonly IPostImagesRepo _postImagesRepo;
         private readonly IAuthenUserRepo _authenUserRepo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<PostService> _logger;
 
-        public PostService(IPostRepo postRepo, IPostImagesRepo postImagesRepo, ILogger<PostService> logger, IAuthenUserRepo authenUserRepo)
+        public PostService(IUnitOfWork unitOfWork, IPostRepo postRepo, IPostImagesRepo postImagesRepo, ILogger<PostService> logger, IAuthenUserRepo authenUserRepo)
         {
+            _unitOfWork = unitOfWork;
             _postRepo = postRepo;
             _postImagesRepo = postImagesRepo;
             _logger = logger;
@@ -24,9 +28,7 @@ namespace FindingPets.Business.Services.PostServices
 
         public async Task<bool> ChangePostStatus(Guid postId, Guid userId)
         {
-            var account = await _authenUserRepo.FindByID(userId);
-            if (account == null) throw new Exception($"User ID: {userId} not found");
-
+            var account = await _authenUserRepo.FindByID(userId) ?? throw new Exception($"User ID: {userId} not found");
             switch (account.Userrole)
             {
                 case 0:
@@ -60,7 +62,10 @@ namespace FindingPets.Business.Services.PostServices
 
                 // Insert post to DB
                 _logger.LogInformation(message: $"Begin insert Post to DB with ID: {postEntity.Id} at {DateTime.Now}");
-                await _postRepo.Insert(postEntity);
+                _unitOfWork.BeginTransaction();
+                var account = await _unitOfWork.AuthenUserRepo.FindByID(ownerId) ?? 
+                    throw new RecordNotFoundException($"User ID: {ownerId} Not Found");
+                _unitOfWork.PostRepo.Add(postEntity); 
 
                 // Insert Images
                 foreach (var newImage in newPost.PostImages)
@@ -73,32 +78,47 @@ namespace FindingPets.Business.Services.PostServices
                     };
                     // Insert images to DB
                     _logger.LogInformation(message: $"Begin insert Image to DB with ID: {imageEntity.Id} at {DateTime.Now}");
-                    await _postImagesRepo.Insert(imageEntity);
+                    _unitOfWork.PostImagesRepo.Add(imageEntity);
                 }
-                return true;
+                var effectedRows = _unitOfWork.CommitTransaction();
+                _unitOfWork.Dispose();
+                return effectedRows > 0;
             }
             catch(Exception ex)
             {
                 _logger.LogInformation(message: $"Error when inserting post to DB: {ex.Message} at {DateTime.Now}");
-                return false;
+                _unitOfWork.RollbackTransaction();
+                _unitOfWork.Dispose();
+                throw;
             }
         }
 
         public async Task<bool> DeletePost(PostDeleteModel post)
         {
-            var postImages = await _postImagesRepo.GetPostImagesByPostID(post.Id);
+            var postImages = await _postImagesRepo.GetPostImagesByPostID(post.Id) ??
+                throw new RecordNotFoundException($"Post Images of Post ID: {post.Id} Not Found");
 
-            if(postImages != null)
+            try
             {
-                var isImageDeleted = await _postImagesRepo.RemoveImages(postImages);
-
-                if (isImageDeleted)
+                if (postImages != null)
                 {
-                    var isPostDeleted = await _postRepo.Delete(post.Id);
-                    return isPostDeleted;
+                    _unitOfWork.BeginTransaction();
+                    await _unitOfWork.PostImagesRepo.FindByID(post.Id);
+
+                    var postEntity = await _unitOfWork.PostRepo.FindByID(post.Id) ??
+                        throw new RecordNotFoundException($"Post ID: {post.Id} Not Found");
+
+                    _unitOfWork.PostRepo.Remove(postEntity);
+                    var effectedRows = _unitOfWork.CommitTransaction();
+                    _unitOfWork.Dispose();
+                    return effectedRows > 0;
                 }
+                return false;
             }
-            return false;
+            catch(Exception)
+            {
+                throw;
+            }
         }
 
         public async Task<List<PostView>> GetAllPosts()
@@ -123,16 +143,17 @@ namespace FindingPets.Business.Services.PostServices
             {
                 //Update post content
                 _logger.LogInformation(message: $"Update Post ID: {newPost.Id} to DB");
-                var isUpdated = await _postRepo.UpdatePost(newPost);
-                if (!isUpdated) return false;
+
+                _unitOfWork.BeginTransaction();
+                await _unitOfWork.PostRepo.UpdatePost(newPost);
 
                 //Get old images 
-                var oldPostImages = await _postImagesRepo.GetPostImagesByPostID(newPost.Id);
+                var oldPostImages = await _unitOfWork.PostImagesRepo.GetPostImagesByPostID(newPost.Id);
                 //Remove all old images
                 if (!oldPostImages.IsNullOrEmpty())
                 {
                     _logger.LogInformation(message: $"Remove old all postImages PostID: {newPost.Id} from DB");
-                    await _postImagesRepo.RemoveImages(oldPostImages);
+                    await _unitOfWork.PostImagesRepo.RemoveImages(oldPostImages);
                 }
                 //Add new images
                 foreach (var image in newPost.postImages)
@@ -144,14 +165,17 @@ namespace FindingPets.Business.Services.PostServices
                         Postid = newPost.Id
                     };
                     _logger.LogInformation(message: $"Insert new postImage ID: {newImage.Id} to DB");
-                    await _postImagesRepo.Insert(newImage);
+                    _unitOfWork.PostImagesRepo.Add(newImage);
                 }
-
-                return true;
+                var effectedRows = _unitOfWork.CommitTransaction();
+                _unitOfWork.Dispose();
+                return effectedRows > 0;
             }
             catch(Exception ex)
             {
                 _logger.LogError(message: $"ERROR: Update Post ID: {newPost.Id} to DB. \n Error: {ex.Message}");
+                _unitOfWork.RollbackTransaction();
+                _unitOfWork.Dispose();
                 throw new Exception($"Update Post {newPost.Id} Failed with error: {ex.Message}");
             }        
         }

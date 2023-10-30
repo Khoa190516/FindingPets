@@ -94,19 +94,12 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserReposi
             }
         }
 
-        public async Task<bool> UpdateProfile(UserProfileUpdateModel model, Guid userId)
+        public async Task UpdateProfile(UserProfileUpdateModel model, Guid userId)
         {
-            var account = await context.Authenusers.FindAsync(userId);
-            if (account == null) throw new Exception($"User ID: {userId} not found in DB");
-
-            //account.Email = model.Email;
+            var account = await context.Authenusers.FindAsync(userId) ?? throw new RecordNotFoundException($"User ID: {userId} not found in DB");
             account.Fullname = model.FullName;
             account.Phone = model.Phone;
             account.Imageurl = model.ImageUrl;
-
-            await Update();
-
-            return true;
         }
     }
 }

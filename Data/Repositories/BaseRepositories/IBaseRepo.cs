@@ -6,5 +6,9 @@
         Task<int> Insert(T entity);
         Task<bool> Delete(Guid id);
         Task<int> Update();
+
+        void Add(T entity);
+        void Remove(T entity);
+        void Edit(T entity);
     }
 }

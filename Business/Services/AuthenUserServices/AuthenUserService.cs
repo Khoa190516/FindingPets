@@ -2,24 +2,26 @@
 using FindingPets.Data.Commons;
 using FindingPets.Data.Models.UserModel;
 using FindingPets.Data.PostgreEntities;
+using FindingPets.Data.Repositories.BaseRepositories;
 using FindingPets.Data.Repositories.ImplementedRepositories.AuthenUserRepositories;
+using FindingPets.Data.UnitOfWork;
 
 namespace FindingPets.Business.Services.AuthenUserServices
 {
     public class AuthenUserService : IAuthenUserService
     {
-        private readonly IAuthenUserRepo _authenUserRepo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<AuthenUserService> _logger;
 
-        public AuthenUserService(IAuthenUserRepo authenUserRepo, ILogger<AuthenUserService> logger)
+        public AuthenUserService(IUnitOfWork unitOfWork, ILogger<AuthenUserService> logger)
         {
-            _authenUserRepo = authenUserRepo;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
         public async Task<bool> CreatAccount(string email)
         {
-            var isEmailExist = await _authenUserRepo.IsEmailExist(email);
+            var isEmailExist = await _unitOfWork.AuthenUserRepo.IsEmailExist(email);
 
             if (isEmailExist)
             {
@@ -36,15 +38,28 @@ namespace FindingPets.Business.Services.AuthenUserServices
                 Userrole = Commons.CUSTOMER,
             };
             _logger.LogInformation(message: $"Begin create new authenUser with ID: {newAccount.Id} account at {DateTime.Now}");
-            return await _authenUserRepo.Insert(newAccount) > 0;
+
+            try
+            {
+                _unitOfWork.BeginTransaction();
+                _unitOfWork.AuthenUserRepo.Add(newAccount);
+                _unitOfWork.Dispose();
+                return _unitOfWork.CommitTransaction() > 0;
+            }
+            catch(Exception)
+            {
+                _unitOfWork.RollbackTransaction();
+                throw;
+            }
+
         }
 
         public async Task<ProfileModel> GetProfile(Guid userId)
         {
-            var account = await _authenUserRepo.FindByID(userId);
+            var account = await _unitOfWork.AuthenUserRepo.FindByID(userId);
             if(account != null)
             {
-                var profile = await _authenUserRepo.GetAccountByEmail(account.Email) ?? 
+                var profile = await _unitOfWork.AuthenUserRepo.GetAccountByEmail(account.Email) ?? 
                     throw new RecordNotFoundException($"Email: {account.Email} Not Found");
 
                 ProfileModel profileView = new()
@@ -68,7 +83,7 @@ namespace FindingPets.Business.Services.AuthenUserServices
 
         public async Task<UserWithPostsModel?> GetUserWithPost(string email)
         {
-            var result = await _authenUserRepo.GetUserWithPosts(email);
+            var result = await _unitOfWork.AuthenUserRepo.GetUserWithPosts(email);
             return result;
         }
 
@@ -76,7 +91,7 @@ namespace FindingPets.Business.Services.AuthenUserServices
         {
             // Check email is in DB and Create Token for this login
             _logger.LogInformation(message: $"Login with email: {account.Email}");
-            var userJWT = await _authenUserRepo.GetAccountByEmail(account.Email) ?? 
+            var userJWT = await _unitOfWork.AuthenUserRepo.GetAccountByEmail(account.Email) ?? 
                 throw new RecordNotFoundException($"Email: {account.Email} Not Found");
             userJWT.Token = JWTUserToken.GenerateJWTTokenUser(userJWT);
             return userJWT;
@@ -86,7 +101,20 @@ namespace FindingPets.Business.Services.AuthenUserServices
         {
             // Check email is in DB and Create Token for this login
             _logger.LogInformation(message: $"Begin updating profile ID: {userId}");
-            return await _authenUserRepo.UpdateProfile(model, userId);
+            try
+            {
+                _unitOfWork.BeginTransaction();
+                await _unitOfWork.AuthenUserRepo.UpdateProfile(model, userId);
+                var effectedRow = _unitOfWork.CommitTransaction();
+                _unitOfWork.Dispose();
+                return effectedRow > 0;
+            }
+            catch (Exception)
+            {
+                _unitOfWork.RollbackTransaction();
+                _unitOfWork.Dispose();
+                throw;
+            }
         }
     }
 }

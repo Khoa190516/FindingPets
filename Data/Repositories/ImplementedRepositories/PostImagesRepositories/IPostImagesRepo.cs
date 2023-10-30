@@ -7,6 +7,6 @@ namespace FindingPets.Data.Repositories.ImplementedRepositories.PostImagesReposi
     public interface IPostImagesRepo : IBaseRepo<Postimage>
     {
         public Task<List<PostImageView>> GetPostImagesByPostID(Guid postId);  
-        public Task<bool> RemoveImages(List<PostImageView> postImages);
+        public Task RemoveImages(List<PostImageView> postImages);
     }
 }
